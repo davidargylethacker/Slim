@@ -1,4 +1,6 @@
-package com.metova.slimdemo;
+package com.metova.slim.sample;
+
+import com.metova.slim.R;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;

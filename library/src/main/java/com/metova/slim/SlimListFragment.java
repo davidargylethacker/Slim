@@ -2,10 +2,12 @@ package com.metova.slim;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.support.v4.app.DialogFragment;
+import android.support.v4.app.ListFragment;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 
-public class SlimDialogFragment extends DialogFragment {
+public abstract class SlimListFragment extends ListFragment {
 
     @Override
     public void onAttach(Activity activity) {
@@ -17,6 +19,12 @@ public class SlimDialogFragment extends DialogFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Slim.injectExtras(getArguments(), this);
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View layout = Slim.createLayout(getActivity(), this, container);
+        return layout != null ? layout : super.onCreateView(inflater, container, savedInstanceState);
     }
 
     @Override

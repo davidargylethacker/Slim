@@ -4,7 +4,7 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.view.View;
 
-public class SlimActivity extends FragmentActivity {
+public abstract class SlimActivity extends FragmentActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -15,5 +15,6 @@ public class SlimActivity extends FragmentActivity {
         }
 
         Slim.injectExtras(getIntent().getExtras(), this);
+        Slim.injectFragment(this);
     }
 }

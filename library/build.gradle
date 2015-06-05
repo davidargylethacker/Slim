@@ -1,0 +1,69 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.neenbedankt.gradle.plugins:android-apt:1.4'
+    }
+}
+
+apply plugin: 'com.android.library'
+apply plugin: 'com.neenbedankt.android-apt'
+apply plugin: 'maven-publish'
+
+android {
+    compileSdkVersion 22
+    buildToolsVersion '22.0.1'
+
+    defaultConfig {
+        minSdkVersion 15
+        targetSdkVersion 22
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_7
+        targetCompatibility JavaVersion.VERSION_1_7
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'com.android.support:support-v4:22.2.0'
+    compile 'com.android.support:appcompat-v7:22.2.0'
+    testCompile 'junit:junit:4.11'
+}
+
+tasks.withType(Test) {
+    scanForTestClasses = false;
+    include "**/*Test.class"
+}
+
+task sourceJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier "source"
+}
+
+publishing {
+    publications {
+        release(MavenPublication) {
+            groupId 'com.metova'
+            artifactId 'slim'
+            version '1.2-beta3'
+            artifact(sourceJar)
+            artifact("$buildDir/outputs/aar/slim-release.aar")
+        }
+    }
+
+    repositories {
+        maven {
+            url 'http://repo.metova.com/nexus/content/repositories/metova-external'
+            credentials {
+                username mavenUser
+                password mavenPassword
+            }
+        }
+    }
+}

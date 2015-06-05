@@ -1,16 +1,22 @@
 package com.metova.slim;
 
-import android.content.Context;
-import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
+import com.metova.slim.annotation.ActivityFragment;
 import com.metova.slim.annotation.Callback;
 import com.metova.slim.annotation.CallbackClick;
 import com.metova.slim.annotation.Extra;
 import com.metova.slim.annotation.Layout;
 import com.metova.slim.internal.BundleChecker;
+
+import android.content.Context;
+import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+import android.text.TextUtils;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
@@ -63,7 +69,7 @@ public class Slim {
             if (field.isAnnotationPresent(Extra.class)) {
                 Extra annotation = field.getAnnotation(Extra.class);
                 String key = annotation.value();
-                Object value = BundleChecker.getExtra(key, extras);
+                Object value = BundleChecker.getExtra(key, null, extras);
 
                 if (value == null) {
                     if (annotation.optional()) {
@@ -238,6 +244,61 @@ public class Slim {
         }
 
         return LayoutInflater.from(context).inflate(layout.value(), parent, false);
+    }
+
+    public static void injectFragment(FragmentActivity activity) {
+        ActivityFragment activityFragment = activity.getClass().getAnnotation(ActivityFragment.class);
+        if (activityFragment == null) {
+            Class<?>[] superClasses = getNonAndroidSuperClasses(activity);
+            for (Class<?> superClass : superClasses) {
+                activityFragment = superClass.getAnnotation(ActivityFragment.class);
+                if (activityFragment != null) {
+                    break;
+                }
+            }
+
+            if (activityFragment == null) {
+                return;
+            }
+        }
+
+        Class<?> fragmentClass = activityFragment.value();
+        int id = activityFragment.id();
+        String tag = activityFragment.tag();
+
+        if (id == 0) {
+            id = android.R.id.content;
+        }
+
+        if (TextUtils.isEmpty(tag)) {
+            tag = null;
+        }
+
+        Fragment fragment = Fragment.instantiate(activity, fragmentClass.getName());
+        addFragment(activity, fragment, id, tag);
+    }
+
+    public static void addFragment(FragmentActivity activity, Fragment fragment) {
+        addFragment(activity, fragment, android.R.id.content);
+    }
+
+    public static void addFragment(FragmentActivity activity, Fragment fragment, String tag) {
+        addFragment(activity, fragment, android.R.id.content, tag);
+    }
+
+    public static void addFragment(FragmentActivity activity, Fragment fragment, int id) {
+        addFragment(activity, fragment, id, null);
+    }
+
+    public static void addFragment(FragmentActivity activity, Fragment fragment, int id, String tag) {
+        FragmentManager fragmentManager = activity.getSupportFragmentManager();
+        FragmentTransaction ft = fragmentManager.beginTransaction();
+        if (tag == null) {
+            ft.add(id, fragment);
+        } else {
+            ft.add(id, fragment, tag);
+        }
+        ft.commit();
     }
 
     private static Class<?>[] getNonAndroidSuperClasses(Object obj) {
